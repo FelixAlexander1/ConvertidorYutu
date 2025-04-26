@@ -2,10 +2,11 @@
 FROM openjdk:21-jdk-slim
 
 # Instalar dependencias necesarias y yt-dlp
-RUN apt-get update && apt-get install -y \
-    python3-pip \
-    && pip3 install -U yt-dlp \
-    && apt-get clean
+RUN apt-get update --fix-missing -y && \
+    apt-get install -y python3-pip curl git && \
+    pip3 install --upgrade pip && \
+    pip3 install -U yt-dlp && \
+    apt-get clean
 
 # Crea un directorio para la app
 WORKDIR /app
