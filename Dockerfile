@@ -1,30 +1,27 @@
-# Usa una imagen de Python para instalar yt-dlp y las dependencias necesarias
-FROM python:3.9-slim
+# Usa openjdk como base
+FROM openjdk:17-slim
 
-# Actualiza los repositorios y asegúrate de que apt-get no falle
-RUN apt-get update --fix-missing -y && \
-    apt-get install -y python3-pip curl git && \
-    pip3 install --upgrade pip && \
-    pip3 install -U yt-dlp && \
+# Instala Python, pip, ffmpeg (yt-dlp depende de ffmpeg) y yt-dlp
+RUN apt-get update && apt-get install -y python3 python3-pip ffmpeg curl && \
+    pip3 install yt-dlp && \
     apt-get clean
 
-# Instala OpenJDK 17 (más común y compatible)
-RUN apt-get update && apt-get install -y openjdk-17-jdk
-
-# Crea un directorio para la app
+# Directorio de trabajo
 WORKDIR /app
 
-# Copia el proyecto al contenedor
+# Copia el proyecto
 COPY . .
 
-# Instala las dependencias de Maven y construye el proyecto
+# Permisos a mvnw
+RUN chmod +x mvnw
+
+# Compila el proyecto
 RUN ./mvnw clean package
 
-# Expone el puerto
+# Exponer puerto de Spring Boot
 EXPOSE 8080
 
-# Comando para ejecutar la aplicación
+# Correr la app
 CMD ["java", "-jar", "target/convertidor-0.0.1-SNAPSHOT.jar"]
-
 
 
