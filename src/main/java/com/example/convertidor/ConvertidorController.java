@@ -4,8 +4,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.HttpStatus;
 
-import java.io.File;
-import java.io.IOException;
+import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.UUID;
@@ -18,24 +17,33 @@ public class ConvertidorController {
         String url = request.getUrl();
         String format = request.getFormat();
 
-        // Nombre único para el archivo
         String fileName = UUID.randomUUID().toString() + "." + format;
-        File outputFile = new File(System.getProperty("java.io.tmpdir"), fileName); // Usar un directorio temporal
+        File outputFile = new File(System.getProperty("java.io.tmpdir"), fileName);
 
         try {
-            // Comando yt-dlp
             ProcessBuilder pb = new ProcessBuilder(
-                "yt-dlp",
-                "--geo-bypass",
-                "--no-check-certificate",
-                "-f", "bestaudio",
-                "--extract-audio",
-                "--audio-format", format,
-                "-o", outputFile.getAbsolutePath(),
-                url
+                    "yt-dlp",
+                    "--geo-bypass",
+                    "--no-check-certificate",
+                    "-f", "bestaudio",
+                    "--extract-audio",
+                    "--audio-format", format,
+                    "-o", outputFile.getAbsolutePath(),
+                    url
             );
-            pb.inheritIO();
+
+            // Capturamos salida y errores para debug
+            pb.redirectErrorStream(true);
             Process process = pb.start();
+
+            // Leemos la salida del proceso
+            try (BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()))) {
+                String line;
+                while ((line = reader.readLine()) != null) {
+                    System.out.println(line); // Log de yt-dlp
+                }
+            }
+
             int exitCode = process.waitFor();
 
             if (exitCode != 0) {
@@ -43,7 +51,6 @@ public class ConvertidorController {
                         .body(new ConversionResponse("Error al convertir el video", false, null));
             }
 
-            // Devolver el nombre del archivo para poder descargarlo luego
             return ResponseEntity.ok(new ConversionResponse("Conversión exitosa", true, fileName));
 
         } catch (IOException | InterruptedException e) {
@@ -58,7 +65,6 @@ public class ConvertidorController {
         try {
             Path tempFilePath = Path.of(System.getProperty("java.io.tmpdir"), file);
             if (Files.exists(tempFilePath)) {
-                // Hacer que el archivo se descargue directamente
                 return ResponseEntity.ok()
                         .header("Content-Disposition", "attachment; filename=\"" + file + "\"")
                         .body(Files.readAllBytes(tempFilePath));
