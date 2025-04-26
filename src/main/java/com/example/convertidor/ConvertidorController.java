@@ -25,12 +25,13 @@ public class ConvertidorController {
         try {
             // Comando yt-dlp
             ProcessBuilder pb = new ProcessBuilder(
-                    "yt-dlp",
-                    "-f", "bestaudio",
-                    "--extract-audio",
-                    "--audio-format", format,
-                    "-o", outputFile.getAbsolutePath(),
-                    url
+                "yt-dlp",
+                "-f", "bestaudio",
+                "--extract-audio",
+                "--audio-format", format,
+                "-o", outputFile.getAbsolutePath(),
+                "--user-agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.36",
+                url
             );
             pb.inheritIO();
             Process process = pb.start();
