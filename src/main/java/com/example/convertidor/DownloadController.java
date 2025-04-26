@@ -14,7 +14,7 @@ import java.io.File;
 @RestController
 public class DownloadController {
 
-    @GetMapping("/download")
+    @GetMapping("/download-file")
     public ResponseEntity<?> downloadFile(@RequestParam String file) {
         File outputFile = new File("downloads", file);
 
