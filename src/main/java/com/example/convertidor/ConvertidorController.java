@@ -6,6 +6,8 @@ import org.springframework.http.HttpStatus;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.UUID;
 
 @RestController
@@ -18,12 +20,9 @@ public class ConvertidorController {
 
         // Nombre único para el archivo
         String fileName = UUID.randomUUID().toString() + "." + format;
-        File outputFile = new File("downloads", fileName); // carpeta downloads/
+        File outputFile = new File(System.getProperty("java.io.tmpdir"), fileName); // Usar un directorio temporal
 
         try {
-            // Asegura que la carpeta downloads existe
-            outputFile.getParentFile().mkdirs();
-
             // Comando yt-dlp
             ProcessBuilder pb = new ProcessBuilder(
                     "yt-dlp",
@@ -49,6 +48,25 @@ public class ConvertidorController {
             e.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(new ConversionResponse("Error en el servidor: " + e.getMessage(), false, null));
+        }
+    }
+
+    @GetMapping("/download")
+    public ResponseEntity<?> download(@RequestParam String file) {
+        try {
+            Path tempFilePath = Path.of(System.getProperty("java.io.tmpdir"), file);
+            if (Files.exists(tempFilePath)) {
+                // Hacer que el archivo se descargue directamente
+                return ResponseEntity.ok()
+                        .header("Content-Disposition", "attachment; filename=\"" + file + "\"")
+                        .body(Files.readAllBytes(tempFilePath));
+            } else {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                        .body("Archivo no encontrado");
+            }
+        } catch (IOException e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Error al intentar descargar el archivo.");
         }
     }
 }
