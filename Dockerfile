@@ -8,8 +8,8 @@ RUN apt-get update --fix-missing -y && \
     pip3 install -U yt-dlp && \
     apt-get clean
 
-# Instala OpenJDK 21 (ya que tu app necesita Java también)
-RUN apt-get update && apt-get install -y openjdk-21-jdk
+# Instala OpenJDK 17 (más común y compatible)
+RUN apt-get update && apt-get install -y openjdk-17-jdk
 
 # Crea un directorio para la app
 WORKDIR /app
@@ -25,5 +25,6 @@ EXPOSE 8080
 
 # Comando para ejecutar la aplicación
 CMD ["java", "-jar", "target/convertidor-0.0.1-SNAPSHOT.jar"]
+
 
 
