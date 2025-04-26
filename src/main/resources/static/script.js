@@ -8,7 +8,6 @@ async function convertir() {
     document.getElementById('mensaje').innerText = 'Convirtiendo... espera por favor...';
 
     try {
-        // 1. Llamamos al backend para convertir
         const response = await fetch('/convert', {
             method: 'POST',
             headers: {
@@ -17,23 +16,23 @@ async function convertir() {
             body: JSON.stringify({ url: url, format: 'mp3' })
         });
 
-        if (!response.ok) {
-            throw new Error('Error en la conversión.');
-        }
+        const data = await response.json(); // Siempre intenta leer la respuesta
 
-        const data = await response.json();
+        if (!response.ok) {
+            // Si falla, mostramos el mensaje del backend si existe
+            const errorMessage = data?.message || 'Error en la conversión.';
+            throw new Error(errorMessage);
+        }
 
         if (data.success) {
             document.getElementById('mensaje').innerText = '¡Conversión exitosa! Descargando...';
-
-            // 2. Descargamos el archivo
             const fileName = data.fileName;
             window.location.href = `/download?file=${encodeURIComponent(fileName)}`;
         } else {
-            document.getElementById('mensaje').innerText = 'Error al convertir el video.';
+            document.getElementById('mensaje').innerText = data.message || 'Error al convertir el video.';
         }
     } catch (error) {
         console.error(error);
-        document.getElementById('mensaje').innerText = 'Error en el proceso.';
+        document.getElementById('mensaje').innerText = `Error: ${error.message}`;
     }
 }
