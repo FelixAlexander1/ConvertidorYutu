@@ -51,22 +51,4 @@ public class ConvertidorController {
         }
     }
 
-    @GetMapping("/download")
-    public ResponseEntity<?> download(@RequestParam String file) {
-        try {
-            Path tempFilePath = Path.of(System.getProperty("java.io.tmpdir"), file);
-            if (Files.exists(tempFilePath)) {
-                // Hacer que el archivo se descargue directamente
-                return ResponseEntity.ok()
-                        .header("Content-Disposition", "attachment; filename=\"" + file + "\"")
-                        .body(Files.readAllBytes(tempFilePath));
-            } else {
-                return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                        .body("Archivo no encontrado");
-            }
-        } catch (IOException e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body("Error al intentar descargar el archivo.");
-        }
-    }
 }
